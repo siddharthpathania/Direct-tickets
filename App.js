@@ -1,382 +1,47 @@
-import React, { useState } from "react";
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, Modal } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import DateTimePicker from '@react-native-community/datetimepicker';
+import React from 'react';
+import { View, Text, Button, StyleSheet ,TouchableOpacity} from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import Book from './components/Book'; 
 
-export default function App() {
-  // Form state
-  const [formData, setFormData] = useState({
-    from: "",
-    fromStation: "Dehradun Railway Station",
-    to: "",
-    toStation: "Pune Railway Station",
-    departureDate: new Date(),
-    returnDate: new Date(),
-    travelers: "1 Adult",
-    class: "3rd AC"
-  });
 
-  // Navigation state
-  const [activeTab, setActiveTab] = useState('search');
-  
-  // Modal states
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [dateType, setDateType] = useState(null);
-  const [showTravellerModal, setShowTravellerModal] = useState(false);
-  const [showClassModal, setShowClassModal] = useState(false);
 
-  // Recent searches
-  const [recentSearches, setRecentSearches] = useState([
-    {
-      from: "Kings Cross, London, UK",
-      to: "Birmingham, UK",
-      date: "Sat 15 June"
-    },
-    {
-      from: "Kings Cross, London, UK",
-      to: "Birmingham, UK",
-      date: "Sat 15 June"
-    }
-  ]);
-
-  // Handle form input changes
-  const handleInputChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  // Handle location swap
-  const handleSwap = () => {
-    setFormData(prev => ({
-      ...prev,
-      from: prev.to,
-      to: prev.from,
-      fromStation: prev.toStation,
-      toStation: prev.fromStation
-    }));
-  };
-
-  // Handle date changes
-  const handleDateChange = (event, selectedDate) => {
-    setShowDatePicker(false);
-    if (selectedDate) {
-      handleInputChange(dateType, selectedDate);
-    }
-  };
-
-  // Handle search
-  const handleSearch = () => {
-    // Add current search to recent searches
-    const newSearch = {
-      from: formData.from,
-      to: formData.to,
-      date: formData.departureDate.toLocaleDateString()
-    };
-    setRecentSearches(prev => [newSearch, ...prev.slice(0, 4)]);
-    // Implement your search logic here
-  };
-
-  // Navigation content components
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'search':
-        return (
-          <>
-            {/* Train Image */}
-            <View style={styles.imageContainer}>
-              <Ionicons name="train-outline" size={100} color="#ccc" />
-            </View>
-
-            {/* Travel Form */}
-            <View style={styles.formContainer}>
-              {/* From Field */}
-              <View style={styles.inputRow}>
-                <Ionicons name="location-outline" size={24} color="#000" />
-                <View style={styles.inputSection}>
-                  <Text style={styles.label}>From</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={formData.from}
-                    onChangeText={(text) => handleInputChange('from', text)}
-                    placeholder="Dehradun UK"
-                    placeholderTextColor="#333"
-                  />
-                  <Text style={styles.subLabel}>{formData.fromStation}</Text>
-                </View>
-              </View>
-
-              {/* Swap Button */}
-              <TouchableOpacity style={styles.swapButton} onPress={handleSwap}>
-                <Ionicons name="swap-vertical-outline" size={24} color="#007AFF" />
-              </TouchableOpacity>
-
-              {/* To Field */}
-              <View style={styles.inputRow}>
-                <Ionicons name="location-outline" size={24} color="#000" />
-                <View style={styles.inputSection}>
-                  <Text style={styles.label}>To</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={formData.to}
-                    onChangeText={(text) => handleInputChange('to', text)}
-                    placeholder="Pune MAHARASHTRA"
-                    placeholderTextColor="#333"
-                  />
-                  <Text style={styles.subLabel}>{formData.toStation}</Text>
-                </View>
-              </View>
-
-              {/* Date Fields */}
-              <View style={styles.dateContainer}>
-                <TouchableOpacity 
-                  style={styles.dateInput}
-                  onPress={() => {
-                    setDateType('departureDate');
-                    setShowDatePicker(true);
-                  }}
-                >
-                  <Text style={styles.label}>Departure</Text>
-                  <Text style={styles.input}>
-                    {formData.departureDate.toLocaleDateString()}
-                  </Text>
-                </TouchableOpacity>
-                
-                <TouchableOpacity 
-                  style={styles.dateInput}
-                  onPress={() => {
-                    setDateType('returnDate');
-                    setShowDatePicker(true);
-                  }}
-                >
-                  <Text style={styles.label}>Return</Text>
-                  <Text style={styles.input}>
-                    {formData.returnDate.toLocaleDateString()}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* Traveler and Class */}
-              <View style={styles.dateContainer}>
-                <TouchableOpacity 
-                  style={styles.dateInput}
-                  onPress={() => setShowTravellerModal(true)}
-                >
-                  <Text style={styles.label}>Traveller</Text>
-                  <Text style={styles.input}>{formData.travelers}</Text>
-                </TouchableOpacity>
-                
-                <TouchableOpacity 
-                  style={styles.dateInput}
-                  onPress={() => setShowClassModal(true)}
-                >
-                  <Text style={styles.label}>Class</Text>
-                  <Text style={styles.input}>{formData.class}</Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* Search Button */}
-              <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-                <Text style={styles.searchButtonText}>Search</Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Recent Searches */}
-            <View style={styles.recentSearchContainer}>
-              {recentSearches.map((search, index) => (
-                <View key={index} style={styles.recentSearch}>
-                  <Ionicons name="time-outline" size={24} color="#000" />
-                  <View style={styles.recentSearchTextContainer}>
-                    <Text style={styles.recentSearchText}>
-                      {search.from} → {search.to}
-                    </Text>
-                    <Text style={styles.recentSearchDate}>{search.date}</Text>
-                  </View>
-                </View>
-              ))}
-            </View>
-          </>
-        );
-      case 'bookings':
-        return (
-          <View style={styles.centeredContent}>
-            <Text>Your Bookings</Text>
-          </View>
-        );
-      case 'chat':
-        return (
-          <View style={styles.centeredContent}>
-            <Text>Chat Support</Text>
-          </View>
-        );
-      case 'profile':
-        return (
-          <View style={styles.centeredContent}>
-            <Text>User Profile</Text>
-          </View>
-        );
-    }
-  };
-
+const HomeScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
-      <ScrollView>
-        <StatusBar style="auto" />
-        {renderContent()}
-      </ScrollView>
-
-      {/* Date Picker Modal */}
-      {showDatePicker && (
-        <DateTimePicker
-          value={dateType === 'departureDate' ? formData.departureDate : formData.returnDate}
-          mode="date"
-          display="default"
-          onChange={handleDateChange}
-        />
-      )}
-
-      {/* Bottom Navigation */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity onPress={() => setActiveTab('search')}>
-          <Ionicons 
-            name={activeTab === 'search' ? "search" : "search-outline"} 
-            size={24} 
-            color={activeTab === 'search' ? "#007AFF" : "#000"} 
-          />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setActiveTab('bookings')}>
-          <Ionicons 
-            name={activeTab === 'bookings' ? "bookmark" : "bookmark-outline"} 
-            size={24} 
-            color={activeTab === 'bookings' ? "#007AFF" : "#000"} 
-          />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setActiveTab('chat')}>
-          <Ionicons 
-            name={activeTab === 'chat' ? "chatbubble" : "chatbubble-outline"} 
-            size={24} 
-            color={activeTab === 'chat' ? "#007AFF" : "#000"} 
-          />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setActiveTab('profile')}>
-          <Ionicons 
-            name={activeTab === 'profile' ? "person" : "person-outline"} 
-            size={24} 
-            color={activeTab === 'profile' ? "#007AFF" : "#000"} 
-          />
-        </TouchableOpacity>
-      </View>
+      <Text style={styles.text}>Welcome to the Home Screen!</Text>
+      <Button
+        title="Go to Book Page"
+        onPress={() => navigation.navigate('BookPage')} 
+      />
     </View>
   );
-}
+};
+
+const Stack = createStackNavigator();
+
+const App = () => {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Home">
+        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="BookPage" component={Book} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
   },
-  imageContainer: {
-    alignItems: "center",
-    marginVertical: 30,
-  },
-  formContainer: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 20,
-    marginHorizontal: 20,
+  text: {
+    fontSize: 20,
     marginBottom: 20,
-    elevation: 2,
-  },
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 15,
-  },
-  inputSection: {
-    flex: 1,
-    marginLeft: 10,
-  },
-  label: {
-    fontSize: 14,
-    color: "#888",
-    marginBottom: 4,
-  },
-  input: {
-    fontSize: 16,
-    color: "#000",
-    paddingVertical: 4,
-  },
-  subLabel: {
-    fontSize: 12,
-    color: "#888",
-    marginTop: 2,
-  },
-  swapButton: {
-    alignSelf: "center",
-    marginVertical: 10,
-    padding: 5,
-  },
-  dateContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 15,
-  },
-  dateInput: {
-    width: "48%",
-    backgroundColor: "#f8f8f8",
-    padding: 10,
-    borderRadius: 5,
-  },
-  searchButton: {
-    backgroundColor: "#007AFF",
-    paddingVertical: 12,
-    borderRadius: 5,
-    alignItems: "center",
-    marginTop: 10,
-  },
-  searchButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  recentSearchContainer: {
-    marginHorizontal: 20,
-    marginBottom: 20,
-  },
-  recentSearch: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
-  },
-  recentSearchTextContainer: {
-    marginLeft: 10,
-    flex: 1,
-  },
-  recentSearchText: {
-    fontSize: 16,
-    color: "#000",
-  },
-  recentSearchDate: {
-    fontSize: 12,
-    color: "#888",
-    marginTop: 2,
-  },
-  bottomNav: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    paddingVertical: 15,
-    borderTopWidth: 1,
-    borderTopColor: "#ddd",
-    backgroundColor: "#fff",
-  },
-  centeredContent: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
   },
 });
+
+export default App;
